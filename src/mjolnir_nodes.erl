@@ -3,5 +3,5 @@
 
 
 node_list() ->
-	[node()].
+	['keith@Keith.local', 'dylan@Dylan.local'].
 

@@ -1,4 +1,4 @@
--module(mjolnir_bot).
+-module(mjolnir_ygg).
 -behaviour(gen_server).
 -compile(export_all).
 
@@ -9,16 +9,10 @@
 %% Function: start_link() -> {ok,Pid} | ignore | {error,Error}
 %% Description: Starts the server
 %%--------------------------------------------------------------------
--record(thor, {yggdrasil, queue}).
+-record(odin, {sons}).
 
 start_link() ->
-    gen_server:start_link({local, mjolnir_bot}, ?MODULE, [], []).
-
-set_yggdrasil(Node) ->
-	gen_server:call(?MODULE, {set_yggdrasil, Node}, 20000).
-
-do_battle(Module, Function, Args) ->
-	gen_server:call(?MODULE, {do_battle, Module, Function, Args})
+    gen_server:start_link({local, mjolnir_ygg}, ?MODULE, [], []).
 
 %%====================================================================
 %% gen_server callbacks
@@ -33,8 +27,10 @@ do_battle(Module, Function, Args) ->
 %%--------------------------------------------------------------------
 init([]) ->
 	process_flag(trap_exit, true),
-	mjolnir_debug:log("Mjolnir Bot (~p) starting ...", [?MODULE]),
-	{ok, #thor{yggdrasil=false, queue=[]}}.
+	mjolnir_debug:log("Mjolnir Yggdrasil (~p) starting ...", [?MODULE]),
+	Peers = mjolnir_nodes:node_list(),
+	Sons = available_peers(Peers),
+	{ok, #odin{sons=Sons}}.
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
@@ -46,11 +42,14 @@ init([]) ->
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
 
-handle_call({set_yggdrasil, Node}, _From, State) ->
-	mjolnir_debug:log("Greatfather Yggdrasil has arrived! ~p~n", [Node]),
-	{noreply, State#thor{yggdrasil=Node}}.
 
-handle_call({do_battle, Module, Function, Args}, _From, State) ->
-	mjolnir_debug:log("Doing battle with ~p:~p for ~p~n", [Module, Function, Args]),
-	Result = apply(Module, Function, Args),
-	{reply, Result, State}.
+%% Internal
+available_peers(Peers) ->
+	lists:foreach(fun(P) -> net_kernel:connect_node(P) end, Peers),
+	nodes().
+
+start_peers([]) -> ok.
+start_peers([H|T]) -> 
+	rpc:call(H, mjolnir_bot, set_yggdrasil, [node()]),
+	start_peers(T).
+	
