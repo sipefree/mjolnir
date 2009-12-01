@@ -18,8 +18,8 @@ set_yggdrasil(Node) ->
 	gen_server:call(?MODULE, {set_yggdrasil, Node}, 20000).
 
 do_battle(Module, Function, Args) ->
-	gen_server:call(?MODULE, {do_battle, Module, Function, Args})
-
+	gen_server:call(?MODULE, {do_battle, Module, Function, Args}).
+ 
 %%====================================================================
 %% gen_server callbacks
 %%====================================================================
@@ -48,7 +48,7 @@ init([]) ->
 
 handle_call({set_yggdrasil, Node}, _From, State) ->
 	mjolnir_debug:log("Greatfather Yggdrasil has arrived! ~p~n", [Node]),
-	{noreply, State#thor{yggdrasil=Node}}.
+	{noreply, State#thor{yggdrasil=Node}};
 
 handle_call({do_battle, Module, Function, Args}, _From, State) ->
 	mjolnir_debug:log("Doing battle with ~p:~p for ~p~n", [Module, Function, Args]),

@@ -48,7 +48,7 @@ available_peers(Peers) ->
 	lists:foreach(fun(P) -> net_kernel:connect_node(P) end, Peers),
 	nodes().
 
-start_peers([]) -> ok.
+start_peers([]) -> ok;
 start_peers([H|T]) -> 
 	rpc:call(H, mjolnir_bot, set_yggdrasil, [node()]),
 	start_peers(T).
